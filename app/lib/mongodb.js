@@ -1,0 +1,47 @@
+import mongoose from 'mongoose';
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+}
+
+/** * Global is used here to maintain a cached connection across hot reloads in development.
+ * This prevents connections from growing exponentially during API Route usage.
+ */
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+const connectDB = async () => {
+  // 1. Agar connection pehle se mojud hai toh wahi return karein
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  // 2. Agar koi purana connection pending hai toh uska intezar karein
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log("✅ MongoDB Connected Successfully");
+      return mongoose;
+    });
+  }
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    console.error("❌ MongoDB Connection Error:", e);
+    throw e;
+  }
+
+  return cached.conn;
+};
+
+export default connectDB;
