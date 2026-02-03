@@ -1,5 +1,5 @@
-import connectDB from '@/lib/mongodb';
-import Order from '@/models/Order';
+import connectDB from "../../../lib/mongodb";
+import Order from "../../../models/Order";
 import { NextResponse } from 'next/server';
 
 // 1. Order Save karne ke liye (Jab user checkout form submit kare)
